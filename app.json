@@ -53,6 +53,17 @@
             "usesCleartextTraffic": true
           }
         }
+      ],
+      "expo-router",
+      [
+        "expo-ble-kit",
+        {
+          "bluetoothAlwaysPermission": "Huddle uses Bluetooth to find listening sessions near you and let friends find yours.",
+          "android": {
+            "advertise": true,
+            "neverForLocation": true
+          }
+        }
       ]
     ],
     "extra": {
@@ -60,6 +71,10 @@
         "projectId": "a63667d1-8909-42df-a66e-18adb3db0805"
       }
     },
-    "owner": "ieatjollofrice"
+    "owner": "ieatjollofrice",
+    "scheme": "huddle",
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

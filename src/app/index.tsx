@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as DocumentPicker from 'expo-document-picker';
-import { useSession } from './src/useSession';
-import { Transport } from './src/transport/types';
-import { WebSocketTransport } from './src/transport/WebSocketTransport';
-import { LoopbackTransport } from './src/transport/LoopbackTransport';
+import { useSession } from '../useSession';
+import { Transport } from '../transport/types';
+import { WebSocketTransport } from '../transport/WebSocketTransport';
+import { LoopbackTransport } from '../transport/LoopbackTransport';
 
 function Session({ transport, onLeave }: { transport: Transport; onLeave: () => void }) {
   const [address, setAddress] = useState<string | null>(null);
