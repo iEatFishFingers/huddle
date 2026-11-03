@@ -130,8 +130,10 @@ export class LoopbackTransport implements Transport {
 
   connect() {
     const gen = ++this.generation;
-    this.statusFn?.(true);
+    // Join BEFORE reporting connected: SyncClient sends `hello {name}` synchronously on connect,
+    // and HostCore ignores messages from non-members, so the other order left the host named "Guest".
     this.core.join(SELF, true);
+    this.statusFn?.(true);
     this.startServer(gen);
   }
 
