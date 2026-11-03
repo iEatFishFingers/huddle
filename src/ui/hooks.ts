@@ -81,7 +81,8 @@ type AddState = { count: number; fraction: number } | null;
 
 /** Pick audio files and add them to the session, with progress + error state. */
 export function useAddSongs(
-  addFiles: (files: PickedFile[], onProgress?: (fraction: number) => void) => Promise<void>,
+  // useSession's addFiles resolves false (with its own `error` set) instead of throwing
+  addFiles: (files: PickedFile[], onProgress?: (fraction: number) => void) => Promise<unknown>,
 ) {
   const [progress, setProgress] = useState<AddState>(null);
   const [error, setError] = useState<string | null>(null);
