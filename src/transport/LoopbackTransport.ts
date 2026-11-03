@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import * as Network from 'expo-network';
-import { File } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import { HostCore } from '../HostCore';
+import { devLog } from '../log';
 import { HOST_PORT, ServerMsg, Track } from '../protocol';
 import type { PeerServer, ServerErrorKind, UploadedFile } from '../server/PeerServer';
 import { mimeForName } from '../server/http';
@@ -16,6 +17,16 @@ export type { ServerErrorKind };
 
 const titleOf = (name: string) => name.replace(/\.[^.]+$/, '') || name;
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+/** Songs joiners uploaded (PeerServer writes them here). Only needed while the session lives. */
+function clearUploads() {
+  try {
+    const dir = new Directory(Paths.cache, 'huddle-uploads');
+    if (dir.exists) dir.delete();
+  } catch (e) {
+    console.warn(`[host] couldn't clear old uploads: ${errText(e)}`);
+  }
+}
 
 /** The host device's own connection to its session, plus the on-phone server remote peers join through. */
 export class LoopbackTransport implements Transport {
@@ -137,13 +148,17 @@ export class LoopbackTransport implements Transport {
     this.startServer(gen);
   }
 
+  /** Ends the session: joiners are told (see PeerServer.stop), timers stop, uploaded songs are deleted. */
   disconnect() {
     this.generation++;
+    const hadServer = !!this.server;
     this.server?.stop();
     this.server = undefined;
     this.address = null;
     this.core.leave(SELF);
+    this.core.dispose();
     this.statusFn?.(false);
+    if (hadServer && Platform.OS !== 'web') clearUploads();
   }
 
   send(msg: Parameters<Transport['send']>[0]) {
@@ -172,7 +187,7 @@ export class LoopbackTransport implements Transport {
     try {
       type = String((await Network.getNetworkStateAsync()).type ?? '');
     } catch {}
-    console.log(`[host] network type=${type} ip=${ip} platform=${Platform.OS}`);
+    devLog(`[host] network type=${type} ip=${ip} platform=${Platform.OS}`);
     if (!ip || ip === '0.0.0.0' || ip.startsWith('127.') || ip.includes(':')) {
       return {
         ip: null,
@@ -208,6 +223,7 @@ export class LoopbackTransport implements Transport {
     }
     const { ip, warning } = await this.localIp();
     if (gen !== this.generation) return;
+    clearUploads(); // leftovers from a session that crashed or was killed
 
     const server = new PeerServerCls({
       onJoin: (id) => this.core.join(id),
@@ -247,7 +263,7 @@ export class LoopbackTransport implements Transport {
       return this.setAddress(null, msg);
     }
     this.server = server;
-    console.log(`[host] listening on 0.0.0.0:${port}, advertising ${ip ?? '(no address)'}`);
+    devLog(`[host] listening on 0.0.0.0:${port}, advertising ${ip ?? '(no address)'}`);
     if (!ip) {
       this.fail('network', warning!);
       return this.setAddress(null, warning);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
+import { devLog } from './log';
 import { SyncClient } from './SyncClient';
 import { PickedFile, Transport } from './transport/types';
 
@@ -174,7 +175,7 @@ export function useSession(transport: Transport, name: string) {
         measureStart.current = false;
         if (Math.abs(drift) < HARD_SEEK_MS) {
           startLeadMs = Math.max(0, Math.min(MAX_START_LEAD_MS, startLeadMs - drift * LEAD_LEARN_RATE));
-          if (__DEV__) console.log(`[sync] start drift ${Math.round(drift)}ms, start lead now ${Math.round(startLeadMs)}ms`);
+          devLog(`[sync] start drift ${Math.round(drift)}ms, start lead now ${Math.round(startLeadMs)}ms`);
         }
       }
       const nudging = rate !== 1;
@@ -182,9 +183,9 @@ export function useSession(transport: Transport, name: string) {
         setRate(1);
         player.seekTo((client.expectedPositionMs() + startLeadMs) / 1000, 0, 0);
         measureStart.current = true;
-        if (__DEV__) console.log(`[sync] seek, drift ${Math.round(drift)}ms`);
+        devLog(`[sync] seek, drift ${Math.round(drift)}ms`);
       } else if (Math.abs(drift) > (nudging ? NUDGE_STOP_MS : NUDGE_START_MS)) {
-        if (__DEV__ && !nudging) console.log(`[sync] nudging rate, drift ${Math.round(drift)}ms`);
+        if (!nudging) devLog(`[sync] nudging rate, drift ${Math.round(drift)}ms`);
         setRate(drift < 0 ? 1 + RATE_NUDGE : 1 - RATE_NUDGE);
       } else {
         setRate(1);

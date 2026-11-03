@@ -126,7 +126,9 @@ export class SyncClient {
         this.samples.push({ rtt, offset: m.t1 - (m.t0 + rtt / 2) });
         // the lowest-RTT sample is the least distorted by network jitter
         this.offset = this.samples.reduce((a, b) => (b.rtt < a.rtt ? b : a)).offset;
-        break;
+        // nothing visible changed; don't re-render subscribers 6 times per sync burst
+        // (expectedPositionMs() reads the new offset whenever it's next called)
+        return;
       }
       case 'welcome':
         this.you = m.you;

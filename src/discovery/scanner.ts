@@ -4,6 +4,7 @@
 
 import type { BleManagerApi, BleState, Peripheral, ScanResult, ScanSession, Subscription } from 'expo-ble-kit';
 
+import { devLog } from '../log';
 import { decodeSession } from './codec';
 import { DEFAULT_TIMINGS, HUDDLE_SERVICE_UUID, SESSION_INFO_CHAR_UUID, type ScannerTimings } from './constants';
 import { describeError, errorCode, JOIN_MESSAGES, messageForErrorCode, messageForState } from './messages';
@@ -149,7 +150,7 @@ export class NearbyScanner {
     try {
       const permissions = await withTimeout(ble.requestPermissionsAsync(), 60_000, 'requestPermissionsAsync');
       if (this.disposed) return;
-      console.log(`[ble] scan permissions: scan=${permissions.scan} connect=${permissions.connect} canAskAgain=${permissions.canAskAgain}`);
+      devLog(`[ble] scan permissions: scan=${permissions.scan} connect=${permissions.connect} canAskAgain=${permissions.canAskAgain}`);
       if (permissions.scan !== 'granted' || permissions.connect !== 'granted') {
         this.permissionError = JOIN_MESSAGES.unauthorized;
       }
@@ -177,7 +178,7 @@ export class NearbyScanner {
   /** Pull-to-refresh: restart the scan and re-read everything visible now. */
   rescan(): void {
     if (this.disposed) return;
-    console.log('[ble] rescan');
+    devLog('[ble] rescan');
     for (const entry of this.entries.values()) {
       entry.failures = 0;
       entry.nextAttempt = 0;
@@ -220,7 +221,7 @@ export class NearbyScanner {
 
   private onState(state: BleState): void {
     if (this.disposed) return;
-    if (state !== this.bleState) console.log(`[ble] adapter state: ${state}`);
+    if (state !== this.bleState) devLog(`[ble] adapter state: ${state}`);
     this.bleState = state;
     if (state === 'poweredOn') {
       // Scan even if a permission looked denied: a refused scan reports PERMISSION_DENIED (same
@@ -264,7 +265,7 @@ export class NearbyScanner {
       }
     }
     try {
-      console.log('[ble] scan start');
+      devLog('[ble] scan start');
       const session = ble.startScan(
         {
           services: [HUDDLE_SERVICE_UUID],
@@ -313,7 +314,7 @@ export class NearbyScanner {
     if (this.scanRetry) clearTimeout(this.scanRetry);
     this.scanRetry = null;
     if (this.scan) {
-      console.log('[ble] scan stop');
+      devLog('[ble] scan stop');
       try {
         this.scan.stop();
       } catch (e) {
@@ -329,7 +330,7 @@ export class NearbyScanner {
     for (const r of results) {
       let entry = this.entries.get(r.id);
       if (!entry) {
-        console.log(`[ble] found host ${r.id} name=${r.name ?? '-'} rssi=${r.rssi}`);
+        devLog(`[ble] found host ${r.id} name=${r.name ?? '-'} rssi=${r.rssi}`);
         entry = { id: r.id, rssi: r.rssi, lastSeen: now, info: null, lastRead: 0, failures: 0, nextAttempt: 0 };
         this.entries.set(r.id, entry);
       }
@@ -343,7 +344,7 @@ export class NearbyScanner {
   private tick(): void {
     if (this.disposed) return;
     if (expireEntries(this.entries, this.now(), this.t.staleMs)) {
-      console.log('[ble] dropped hosts no longer advertising');
+      devLog('[ble] dropped hosts no longer advertising');
     }
     this.publish();
     this.pump();
@@ -397,7 +398,7 @@ export class NearbyScanner {
         live.failures = 0;
         live.nextAttempt = 0;
       }
-      console.log(
+      devLog(
         `[ble] read ${entry.id} in ${this.now() - started} ms: "${info.sessionName}" ${info.host}:${info.port} ${info.members}/${info.maxMembers}`,
       );
     } catch (e) {
@@ -424,7 +425,7 @@ export class NearbyScanner {
   private abortCurrent(reason: string): void {
     const current = this.current;
     if (!current) return;
-    console.log(`[ble] cancelling read of ${current.peripheral.id} (${reason})`);
+    devLog(`[ble] cancelling read of ${current.peripheral.id} (${reason})`);
     current.abort.abort();
     current.peripheral.disconnect().catch(() => {});
   }

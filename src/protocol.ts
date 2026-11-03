@@ -77,6 +77,10 @@ export type ServerMsg =
 export const MAX_PEERS = 4;
 export const HOST_PORT = 8787;
 
+/** WebSocket close codes the host sends. Peers must not reconnect after either. */
+export const CLOSE_SESSION_ENDED = 1001; // "going away": the host ended the session
+export const CLOSE_SESSION_FULL = 1013; // "try again later": MAX_PEERS reached
+
 /**
  * Uploads: a joining peer adds a song by sending
  *   POST /upload?name=<urlencoded file name>&addedBy=<urlencoded name>

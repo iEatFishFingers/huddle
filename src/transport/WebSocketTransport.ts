@@ -1,12 +1,11 @@
 import { File, UploadType } from 'expo-file-system';
-import { HOST_PORT, MAX_UPLOAD_BYTES, ServerMsg, UPLOAD_PATH } from '../protocol';
+import { CLOSE_SESSION_ENDED, CLOSE_SESSION_FULL, HOST_PORT, MAX_UPLOAD_BYTES, ServerMsg, UPLOAD_PATH } from '../protocol';
+import { devLog } from '../log';
 import { PickedFile, Transport } from './types';
 
 const RECONNECT_MIN_MS = 500;
 const RECONNECT_MAX_MS = 5000;
 const RECONNECT_GIVE_UP_MS = 30_000;
-/** Close code the host uses when the session is full; reconnecting won't help. */
-const CLOSE_SESSION_FULL = 1013;
 
 /** Accepts "192.168.1.5", "192.168.1.5:8788" or a bare host plus explicit port. */
 function splitHostPort(host: string, port?: number): { host: string; port: number } {
@@ -109,6 +108,11 @@ export class WebSocketTransport implements Transport {
       if (e.code === CLOSE_SESSION_FULL) {
         this.wanted = false;
         return this.errorFn?.('The session is full.');
+      }
+      if (e.code === CLOSE_SESSION_ENDED) {
+        this.wanted = false;
+        devLog(`[join] host ${this.host}:${this.port} ended the session`);
+        return this.errorFn?.('The host ended the session.');
       }
       const now = Date.now();
       if (!this.droppedAt) this.droppedAt = now;

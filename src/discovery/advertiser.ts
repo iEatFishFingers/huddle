@@ -12,6 +12,7 @@ import {
   type Subscription,
 } from 'expo-ble-kit';
 
+import { devLog } from '../log';
 import { encodeSession, validateSession } from './codec';
 import { ADVERTISED_NAME, HUDDLE_SERVICE_UUID, SESSION_INFO_CHAR_UUID } from './constants';
 import { describeError, errorCode, HOST_MESSAGES, messageForErrorCode, messageForState } from './messages';
@@ -88,7 +89,7 @@ class HostAdvertiser implements AdvertiseHandle {
         60_000,
         'requestPermissionsAsync',
       );
-      console.log(`[ble] host permissions: connect=${p.connect} advertise=${p.advertise} canAskAgain=${p.canAskAgain}`);
+      devLog(`[ble] host permissions: connect=${p.connect} advertise=${p.advertise} canAskAgain=${p.canAskAgain}`);
       if (p.connect !== 'granted' || p.advertise !== 'granted') {
         this.currentError = HOST_MESSAGES.unauthorized;
         return;
@@ -111,7 +112,7 @@ class HostAdvertiser implements AdvertiseHandle {
 
   private onState(state: BleState): void {
     if (this.stopped) return;
-    console.log(`[ble] host adapter state: ${state}`);
+    devLog(`[ble] host adapter state: ${state}`);
     if (state === 'poweredOn') {
       this.enqueue(() => this.bringUp());
     } else {
@@ -145,11 +146,11 @@ class HostAdvertiser implements AdvertiseHandle {
           if (normalizeUUID(characteristic) !== this.charUuid) {
             throw new BleError(BleErrorCode.READ_NOT_PERMITTED, 'Not readable');
           }
-          console.log(`[ble] host: session info read by ${centralId}`);
+          devLog(`[ble] host: session info read by ${centralId}`);
           this.scheduleRearm();
           return this.value;
         });
-        console.log('[ble] host: GATT server open');
+        devLog('[ble] host: GATT server open');
         if (this.stopped) return; // stop() runs tearDown after us in the queue
       }
       this.advertisement = await withTimeout(
@@ -165,7 +166,7 @@ class HostAdvertiser implements AdvertiseHandle {
         STEP_TIMEOUT_MS,
         'startAdvertising',
       );
-      console.log('[ble] host: advertising');
+      devLog('[ble] host: advertising');
       this.currentError = null;
     } catch (e) {
       console.warn(`[ble] host bring-up failed: ${describeError(e)}`);
@@ -185,7 +186,7 @@ class HostAdvertiser implements AdvertiseHandle {
     if (advertisement) {
       try {
         await withTimeout(advertisement.stop(), STEP_TIMEOUT_MS, 'stopAdvertising');
-        console.log('[ble] host: advertising stopped');
+        devLog('[ble] host: advertising stopped');
       } catch (e) {
         console.warn(`[ble] host stopAdvertising: ${describeError(e)}`);
       }
@@ -193,7 +194,7 @@ class HostAdvertiser implements AdvertiseHandle {
     if (server) {
       try {
         await withTimeout(server.close(), STEP_TIMEOUT_MS, 'closeGattServer');
-        console.log('[ble] host: GATT server closed');
+        devLog('[ble] host: GATT server closed');
       } catch (e) {
         console.warn(`[ble] host close server: ${describeError(e)}`);
       }
@@ -210,7 +211,7 @@ class HostAdvertiser implements AdvertiseHandle {
         if (this.stopped || !advertisement) return;
         this.advertisement = null;
         await advertisement.stop().catch(() => {});
-        console.log('[ble] host: re-arming advertising');
+        devLog('[ble] host: re-arming advertising');
         await this.bringUp();
       });
     }, REARM_ADVERTISING_AFTER_READ_MS);
@@ -242,7 +243,7 @@ export async function startHosting(
     return inertHandle(HOST_MESSAGES.failed);
   }
   if (active) {
-    console.log('[ble] host: stopping the previous advertisement first');
+    devLog('[ble] host: stopping the previous advertisement first');
     await active.stop();
   }
   const host = new HostAdvertiser(ble, info, platform);

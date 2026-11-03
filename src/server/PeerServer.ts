@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 import TcpSocket from 'react-native-tcp-socket';
 import { Directory, File, FileMode, Paths } from 'expo-file-system';
 import type { FileHandle } from 'expo-file-system';
-import { ClientMsg, MAX_UPLOAD_BYTES, ServerMsg, UPLOAD_PATH } from '../protocol';
+import { CLOSE_SESSION_ENDED, CLOSE_SESSION_FULL, ClientMsg, MAX_UPLOAD_BYTES, ServerMsg, UPLOAD_PATH } from '../protocol';
 import { FrameParser, acceptKey, encodeFrame } from './ws';
 import { checkUpload, mimeForName, parseRange, parseRequestHead, simpleResponse } from './http';
 
@@ -36,6 +36,13 @@ export type PeerServerHandlers = {
 
 const CHUNK = 64 * 1024;
 const LISTEN_TIMEOUT_MS = 5000;
+/**
+ * A peer that sends nothing for this long is gone (e.g. walked out of Wi-Fi range: no TCP reset
+ * ever arrives). Clients ping every 10 s, so this only catches dead connections. Without it a
+ * ghost member blocks "everyone ready" (see HostCore pending play) on every track change.
+ */
+const PEER_IDLE_TIMEOUT_MS = 60_000;
+const IDLE_CHECK_MS = 10_000;
 /** Pause reading an upload while this many chunk writes are queued (back-pressure). */
 const UPLOAD_HIGH_WATER = 8;
 
@@ -52,6 +59,9 @@ export class PeerServer {
   private server?: ReturnType<typeof TcpSocket.createServer>;
   private peers = new Map<string, Socket>();
   private sockets = new Set<Socket>();
+  /** Last time each WebSocket peer sent anything. */
+  private lastSeen = new Map<string, number>();
+  private idleTimer?: ReturnType<typeof setInterval>;
   private nextId = 1;
   private uploadSeq = 0;
   private stopped = false;
@@ -94,20 +104,43 @@ export class PeerServer {
         settled = true;
         clearTimeout(timer);
         this.port = port;
+        this.idleTimer = setInterval(() => this.dropIdlePeers(), IDLE_CHECK_MS);
         resolve();
       });
     });
   }
 
+  /** Ends the session: tells every peer (close 1001) so they leave instead of retrying, then shuts down. */
   stop() {
     this.stopped = true;
-    this.sockets.forEach((s) => s.destroy());
+    clearInterval(this.idleTimer);
+    const bye = encodeFrame(0x8, Buffer.from([CLOSE_SESSION_ENDED >> 8, CLOSE_SESSION_ENDED & 0xff]));
+    for (const s of this.sockets) {
+      if ([...this.peers.values()].includes(s)) {
+        write(s, bye)
+          .catch(() => {})
+          .finally(() => s.destroy());
+      } else {
+        s.destroy();
+      }
+    }
     this.sockets.clear();
     this.peers.clear();
+    this.lastSeen.clear();
     try {
       this.server?.close();
     } catch {}
     this.server = undefined;
+  }
+
+  private dropIdlePeers() {
+    const now = Date.now();
+    for (const [id, seen] of this.lastSeen) {
+      if (now - seen < PEER_IDLE_TIMEOUT_MS) continue;
+      console.warn(`[host] ${id} silent for ${Math.round((now - seen) / 1000)} s; dropping it`);
+      this.lastSeen.delete(id);
+      this.peers.get(id)?.destroy(); // 'close' handler removes it and calls onLeave
+    }
   }
 
   send(peerId: string, msg: ServerMsg) {
@@ -141,13 +174,17 @@ export class PeerServer {
       }
       if (peerId && this.peers.get(peerId) === socket) {
         this.peers.delete(peerId);
+        this.lastSeen.delete(peerId);
         this.handlers.onLeave(peerId);
       }
     });
 
     socket.on('data', (chunk: any) => {
       const buf = typeof chunk === 'string' ? Buffer.from(chunk, 'base64') : Buffer.from(chunk);
-      if (mode === 'ws') return this.onFrames(socket, parser!.push(buf), peerId!);
+      if (mode === 'ws') {
+        this.lastSeen.set(peerId!, Date.now());
+        return this.onFrames(socket, parser!.push(buf), peerId!);
+      }
       if (mode === 'upload') return upload!.push(buf);
       if (mode === 'busy') return;
       head = Buffer.concat([head, buf]);
@@ -167,13 +204,14 @@ export class PeerServer {
             );
             const id = `peer-${this.nextId++}`;
             if (!this.handlers.onJoin(id)) {
-              // join() already refused; send close 1013 "try again later" (session full)
-              await write(socket, encodeFrame(0x8, Buffer.from([0x03, 0xf5])));
+              // join() already refused (session full)
+              await write(socket, encodeFrame(0x8, Buffer.from([CLOSE_SESSION_FULL >> 8, CLOSE_SESSION_FULL & 0xff])));
               return socket.destroy();
             }
             peerId = id;
             parser = new FrameParser();
             this.peers.set(id, socket);
+            this.lastSeen.set(id, Date.now());
             mode = 'ws';
             if (rest.length) this.onFrames(socket, parser.push(rest), id);
           })

@@ -68,6 +68,20 @@ export function SessionScreen({ active, name, onLeave }: Props) {
     };
   }, [client, toasts.push]);
 
+  // The connection ended for good (host ended the session, session full, host unreachable):
+  // say why, then go back to the session list instead of showing "Connecting…" forever.
+  useEffect(() => {
+    if (active.role !== 'joiner') return;
+    active.transport.onError?.((message) => {
+      if (Platform.OS === 'web') {
+        globalThis.alert?.(message);
+        onLeave();
+        return;
+      }
+      Alert.alert(message, undefined, [{ text: 'OK', onPress: onLeave }], { cancelable: false });
+    });
+  }, [active, onLeave]);
+
   const leave = useCallback(() => {
     confirm(
       isHost ? 'End this session?' : 'Leave this session?',

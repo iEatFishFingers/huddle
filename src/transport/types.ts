@@ -22,4 +22,9 @@ export interface Transport {
    * (see UPLOAD_PATH in protocol.ts). `onProgress` gets 0..1 across all files.
    */
   addFiles(files: PickedFile[], addedBy: string, onProgress?: (fraction: number) => void): Promise<void>;
+  /**
+   * The connection ended for good and won't be retried (host ended the session, session full,
+   * host unreachable). `message` is user-facing. Optional: the host's loopback never ends this way.
+   */
+  onError?(fn: (message: string) => void): void;
 }
