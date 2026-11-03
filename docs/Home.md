@@ -24,6 +24,8 @@ These notes are linked with `[[wikilinks]]`. Open the `docs/` folder as an [Obsi
 - [[UI and Navigation]]: screens, components, and the session store
 
 ## Working on it
+- [[Project History]]: everything built so far, in order, with the problems we hit
+- [[Open Items]]: what's left to test, fix and decide
 - [[Testing]]
 - [[Troubleshooting]]
 - [[Decisions]]: why things are the way they are

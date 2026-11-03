@@ -15,7 +15,7 @@ Built with Expo (SDK 58) and React Native. Runs on iOS and Android, and works be
 
 ## Documentation
 
-Detailed docs live in [`docs/`](docs/Home.md): one note per topic, linked together with `[[wikilinks]]`. Open the folder as an [Obsidian](https://obsidian.md) vault to browse it as a linked graph, or start at [docs/Home.md](docs/Home.md) on GitHub.
+Detailed docs live in [`docs/`](docs/Home.md): one note per topic, linked together with `[[wikilinks]]`. Open the folder as an [Obsidian](https://obsidian.md) vault to browse it as a linked graph, or start at [docs/Home.md](docs/Home.md) on GitHub. [Project History](docs/Project%20History.md) records how the app got here, and [Open Items](docs/Open%20Items.md) lists what's left.
 
 ## How it works
 
