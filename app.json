@@ -35,8 +35,7 @@
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.INTERNET"
       ],
-      "package": "com.ieatjollofrice.huddle",
-      "usesCleartextTraffic": true
+      "package": "com.ieatjollofrice.huddle"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,13 +44,37 @@
       "expo-audio",
       "expo-dev-client",
       "expo-document-picker",
-      "expo-file-system"
+      "expo-file-system",
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-router",
+      [
+        "expo-ble-kit",
+        {
+          "bluetoothAlwaysPermission": "Huddle uses Bluetooth to find listening sessions near you and let friends find yours.",
+          "android": {
+            "advertise": true,
+            "neverForLocation": true
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
         "projectId": "a63667d1-8909-42df-a66e-18adb3db0805"
       }
     },
-    "owner": "ieatjollofrice"
+    "owner": "ieatjollofrice",
+    "scheme": "huddle",
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
