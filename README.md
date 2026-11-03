@@ -13,6 +13,10 @@ Built with Expo (SDK 58) and React Native. Runs on iOS and Android, and works be
 - **Tight sync.** Every phone syncs its clock with the host and corrects drift continuously. Small drift is corrected by a slight, pitch-corrected speed change; large gaps by a single seek.
 - **Streaming.** Playback starts once a few seconds are buffered, instead of after downloading the whole file.
 
+## Documentation
+
+Detailed docs live in [`docs/`](docs/Home.md): one note per topic, linked together with `[[wikilinks]]`. Open the folder as an [Obsidian](https://obsidian.md) vault to browse it as a linked graph, or start at [docs/Home.md](docs/Home.md) on GitHub.
+
 ## How it works
 
 ```
