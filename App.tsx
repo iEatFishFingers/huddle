@@ -39,7 +39,7 @@ function Session({ transport, onLeave }: { transport: Transport; onLeave: () => 
         <Text style={styles.nowTitle}>{current?.title ?? 'Pick a track'}</Text>
         {current && (
           <Text style={styles.dim}>
-            {loading ? 'Downloading…' : `Ready ${ready}/${peers}`}
+            {loading ? 'Buffering…' : `Ready ${ready}/${peers}`}
             {!loading && !allReady && ' · waiting for everyone'}
           </Text>
         )}

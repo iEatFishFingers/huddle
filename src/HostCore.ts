@@ -14,7 +14,11 @@ export class HostCore {
   constructor(private out: Outbox) {}
 
   addTracks(tracks: Track[]) {
-    this.tracks.push(...tracks);
+    // ids are derived from name + size, so re-adding the same file is a no-op
+    const known = new Set(this.tracks.map((t) => t.id));
+    const fresh = tracks.filter((t) => !known.has(t.id) && known.add(t.id));
+    if (fresh.length === 0) return;
+    this.tracks.push(...fresh);
     this.out.all({ type: 'tracks', tracks: this.tracks });
   }
 
