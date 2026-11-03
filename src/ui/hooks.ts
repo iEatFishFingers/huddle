@@ -24,14 +24,12 @@ export function useHostAddress(transport: LoopbackTransport | null) {
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     if (!transport) return;
+    // onAddress replays the last result immediately if the server is already up
     transport.onAddress((ip, err) => {
       setError(err);
       const a = transport.getAddress();
       setAddress(a ?? (ip ? { host: ip, port: 0 } : null));
     });
-    // in case the server came up before we subscribed
-    const a = transport.getAddress();
-    if (a) setAddress(a);
   }, [transport]);
   return { address, error };
 }
@@ -45,7 +43,11 @@ export function useAdvertise(
   const handle = useRef<Awaited<ReturnType<typeof advertiseSession>> | null>(null);
   const { sessionName, hostName, host, port, members } = info;
   const latest = useRef<AdvertisedSession | null>(null);
-  latest.current = host ? { sessionName, hostName, host, port, members, maxMembers: MAX_PEERS } : null;
+
+  // keep the latest info for the effects below (declared first, so it runs first)
+  useEffect(() => {
+    latest.current = host ? { sessionName, hostName, host, port, members, maxMembers: MAX_PEERS } : null;
+  });
 
   // start once the address is known; restart only if the address itself changes
   useEffect(() => {

@@ -29,6 +29,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
     "typescript": "~6.0.3",
     "ws": "^8.22.0"
   },
@@ -39,7 +41,8 @@
     "web": "expo start --web",
     "host": "node server/dev-host.mjs",
     "build:dev:android": "eas build --profile development --platform android",
-    "build:dev:ios": "eas build --profile development --platform ios"
+    "build:dev:ios": "eas build --profile development --platform ios",
+    "lint": "expo lint"
   },
   "private": true
 }

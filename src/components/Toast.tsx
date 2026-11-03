@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, space } from '../ui/theme';
+import { radius, space } from '../ui/theme';
 
 const VISIBLE_MS = 2500;
 const FADE_MS = 180;
@@ -20,7 +20,7 @@ export function useToastQueue() {
 /** Bottom toast that slides in, stays ~2.5 s, then calls onHidden. */
 export function Toast({ toast, onHidden, bottomOffset = 0 }: { toast: { id: number; text: string } | null; onHidden: () => void; bottomOffset?: number }) {
   const insets = useSafeAreaInsets();
-  const anim = useRef(new Animated.Value(0)).current;
+  const [anim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (!toast) return;

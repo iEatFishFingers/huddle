@@ -150,7 +150,7 @@ export function HomeScreen({ onHost, onJoin }: Props) {
             </Pressable>
             {showAddress && (
               <View style={styles.sheet}>
-                <Text style={styles.hint}>Use this when Bluetooth isn't available. The host's screen shows the address.</Text>
+                <Text style={styles.hint}>Use this when Bluetooth isn&apos;t available. The host&apos;s screen shows the address.</Text>
                 <View style={styles.addressRow}>
                   <View style={styles.flex}>
                     <TextField

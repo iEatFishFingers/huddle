@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { colors, space } from '../ui/theme';
 
 /** Small pulsing "Scanning…" indicator. */
 export function ScanningDot({ active }: { active: boolean }) {
-  const pulse = useRef(new Animated.Value(0)).current;
+  // useState, not useRef(...).current: the value is created once and never read from a ref during render
+  const [pulse] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (!active) return;
     const loop = Animated.loop(

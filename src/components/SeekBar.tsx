@@ -20,7 +20,8 @@ const HOLD_MS = 2000;
 export function SeekBar({ positionMs, durationMs, onSeek, disabled }: Props) {
   const [width, setWidth] = useState(0);
   const [dragMs, setDragMs] = useState<number | null>(null);
-  const [held, setHeld] = useState<{ ms: number; at: number } | null>(null);
+  /** Target of the last seek, shown until the host's state catches up (or HOLD_MS passes). */
+  const [held, setHeld] = useState<number | null>(null);
   const canSeek = !disabled && durationMs > 0;
 
   // PanResponder is created once; read live values through a ref.
@@ -29,6 +30,9 @@ export function SeekBar({ positionMs, durationMs, onSeek, disabled }: Props) {
     Object.assign(live.current, { width, durationMs, canSeek, onSeek });
   }, [width, durationMs, canSeek, onSeek]);
 
+  // PanResponder.create only stores these handlers; the refs inside are read when a gesture
+  // happens, never during render. The React Compiler lint can't see that, hence the exception.
+  /* eslint-disable react-hooks/refs */
   const pan = useMemo(() => {
     const msAt = (x: number) => {
       const { width: w, durationMs: d } = live.current;
@@ -48,20 +52,24 @@ export function SeekBar({ positionMs, durationMs, onSeek, disabled }: Props) {
       onPanResponderRelease: (_e, g) => {
         const ms = msAt(live.current.startX + g.dx);
         setDragMs(null);
-        setHeld({ ms, at: Date.now() });
+        setHeld(ms);
         live.current.onSeek(ms);
       },
       onPanResponderTerminate: () => setDragMs(null),
     });
   }, []);
+  /* eslint-enable react-hooks/refs */
 
-  // drop the held value once playback reports a nearby position (or it times out)
+  // forget the held target after HOLD_MS
   useEffect(() => {
-    if (!held) return;
-    if (Math.abs(positionMs - held.ms) < 1500 || Date.now() - held.at > HOLD_MS) setHeld(null);
-  }, [positionMs, held]);
+    if (held === null) return;
+    const t = setTimeout(() => setHeld(null), HOLD_MS);
+    return () => clearTimeout(t);
+  }, [held]);
 
-  const shownMs = dragMs ?? held?.ms ?? positionMs;
+  // while held, show the target unless playback has already caught up to it
+  const showHeld = held !== null && Math.abs(positionMs - held) >= 1500;
+  const shownMs = dragMs ?? (showHeld ? held : positionMs);
   const clamped = durationMs > 0 ? Math.min(shownMs, durationMs) : shownMs;
   const fraction = durationMs > 0 ? clamped / durationMs : 0;
   const dragging = dragMs !== null;
