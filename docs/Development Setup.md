@@ -35,7 +35,15 @@ npx expo start --dev-client
 2. The phones and PC must share a Wi-Fi network (not a guest network).
 3. Host on one phone and join from the other ([[Discovery]]).
 
+## Scripts
+| Script | Does |
+| --- | --- |
+| `npm start` | `expo start` |
+| `npm run check` | typecheck + lint + tests ([[Testing]]) |
+| `npm run build:dev:android` / `build:dev:ios` | EAS development builds |
+
 ## Config worth knowing
+- **Permissions are kept minimal.** No microphone (the app never records): `expo-audio` is configured with `microphonePermission: false` and `recordAudioAndroid: false`, and `RECORD_AUDIO` is in `blockedPermissions`. The storage permissions in the final manifest come from `expo-file-system` and only apply to Android 12 and older.
 - `app.json` → `expo-build-properties` sets Android `usesCleartextTraffic: true`. Joiners use plain `ws://` and `http://` to the host's LAN IP.
 - `app.json` → `expo-ble-kit` sets the Bluetooth permission text, Android `advertise: true` and `neverForLocation: true`.
 - iOS: `NSLocalNetworkUsageDescription` and `NSAllowsLocalNetworking` for LAN access.

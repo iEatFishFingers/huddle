@@ -23,3 +23,4 @@ Anyone in a session can add songs. The host serves every track, so a joiner's so
 - **Track id = `name-size`**, so uploading the same file again doesn't duplicate it. The extra copy is deleted, and the existing track is queued again instead.
 - **Rejections:** `411` (no Content-Length, or chunked), `413` (over 50 MB), `400` (missing name or empty file).
 - An interrupted upload deletes its partial file and reports a `[host]` error.
+- Uploaded songs only live as long as the session. They're deleted when the host ends it, and any left over from a crash are deleted the next time someone hosts.

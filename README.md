@@ -95,11 +95,12 @@ src/
 ## Development
 
 ```bash
-npx tsc --noEmit        # typecheck
+npm run check           # typecheck + lint + unit tests (run before committing)
+npm run typecheck       # tsc --noEmit
+npm run lint            # ESLint (eslint-config-expo)
+npm test                # HostCore unit tests (queue, readiness, seeking)
 npx expo-doctor         # dependency / config health check
 ```
-
-HostCore's queue and playback logic has a dependency-free test, `src/core/HostCore.test.ts`. To run it, compile it with `tsc` to a scratch folder and run the output with Node.
 
 Logs to watch in the dev server output:
 

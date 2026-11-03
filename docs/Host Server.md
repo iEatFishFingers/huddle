@@ -25,6 +25,10 @@ Back to [[Home]] · see also [[Architecture]], [[Transports]], [[Uploads]]
 2. Listens on `0.0.0.0:8787`. **If that port is taken, it tries 8788–8796.** On Android, a JS reload can leave the old native server holding the port.
 3. Listen times out after 5 s. A start that's still in flight is cancelled if the user leaves (a generation counter).
 
+## Ending and dead peers
+- **Ending the session** (`stop()`): every peer gets WebSocket close **1001** ("going away") before the server shuts down. Joiners then show "The host ended the session." and go back to the list, instead of retrying (see [[Transports#Reconnecting]]). Uploaded songs are deleted (see [[Uploads]]).
+- **Idle peers:** a peer that sends nothing for **60 s** is dropped. Clients ping every 10 s ([[Clock Sync]]), so this only catches dead connections. A phone that walks out of Wi-Fi range never sends a TCP reset, and without this it would stay a "ghost" member that holds up every track change ([[Readiness and Pending Play]]).
+
 ## Errors
 Every failure (listen, socket, audio, upload, network) is reported in two places:
 - `onServerError` to the UI

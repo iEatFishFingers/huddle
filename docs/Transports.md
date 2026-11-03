@@ -23,6 +23,13 @@ addFiles(files, addedBy, onProgress?)   // see Uploads
 - `onError(fn)` fires when it gives up: "The session is full." or "Lost connection to the host…".
 
 ### Reconnecting
-If the socket drops unexpectedly, it retries with backoff (0.5 s, doubling to 5 s) for up to 30 s, calling `onStatus(false)` then `onStatus(true)`. It never reconnects after a deliberate `disconnect()`, or when the session is full (code `1013`).
+If the socket drops unexpectedly, it retries with backoff (0.5 s, doubling to 5 s) for up to 30 s, calling `onStatus(false)` then `onStatus(true)`. It never reconnects:
+- after a deliberate `disconnect()`
+- when the host **ended the session** (close `1001`)
+- when the session is **full** (close `1013`)
+
+Both close codes are defined in [[Session Protocol#Limits and constants]].
+
+When it gives up, `onError(message)` fires. The session screen shows the message and returns to the home screen ([[UI and Navigation]]).
 
 A reconnect is a **new peer** to the host. That's why [[SyncClient]] re-sends `hello` and `useSession` re-sends `ready` (see [[Readiness and Pending Play]]).

@@ -38,6 +38,7 @@ Defined in `src/protocol.ts`. Messages are JSON. They travel over a WebSocket at
 | `notice {text}` | A toast, e.g. "Sam added Song" (see [[UI and Navigation]]) |
 
 ## Limits and constants
-- `MAX_PEERS = 4`: members including the host. A fifth peer gets WebSocket close code `1013`.
+- `MAX_PEERS = 4`: members including the host.
+- **Close codes:** `CLOSE_SESSION_FULL = 1013` (a fifth peer) and `CLOSE_SESSION_ENDED = 1001` (the host tapped End). Peers never reconnect after either. See [[Transports#Reconnecting]].
 - `HOST_PORT = 8787`. It falls back to 8788–8796 if the port is taken (see [[Host Server]]).
 - `UPLOAD_PATH = '/upload'`, `MAX_UPLOAD_BYTES = 50 MB`. See [[Uploads]].

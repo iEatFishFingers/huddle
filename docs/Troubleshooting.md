@@ -3,6 +3,8 @@
 Back to [[Home]] · see also [[Development Setup]], [[Testing]]
 
 ## Log prefixes (dev-server output)
+Verbose logs are **dev-only** (`devLog` in `src/log.ts`). Release builds only print warnings.
+
 | Prefix | Comes from | Healthy example |
 | --- | --- | --- |
 | `[host]` | [[Host Server]] / loopback [[Transports]] | `network type=WIFI ip=192.168.1.84` then `listening on 0.0.0.0:8787` |
@@ -18,6 +20,8 @@ Back to [[Home]] · see also [[Development Setup]], [[Testing]]
 | Host on a port other than 8787 | An old native server from a JS reload still holds the port. Harmless: the real port is advertised ([[Host Server#Startup]]) |
 | Joiner can't connect | Both phones must be on the same Wi-Fi network. Guest networks often isolate devices |
 | "The session is full." | 4 members max ([[Session Protocol#Limits and constants]]) |
+| "The host ended the session." | The host tapped End. Pick another session or host your own ([[Host Server#Ending and dead peers]]) |
+| `[host] peer-N silent for 60 s; dropping it` | That phone lost Wi-Fi or froze. It can rejoin from Nearby sessions |
 | Play does nothing for a few seconds | Someone is still buffering ([[Readiness and Pending Play]]) |
 | Brief audio dropouts on iPhone | Frequent playback-rate changes. Look for repeated `[sync] nudging rate` lines ([[Playback and Drift Correction#The iOS dropout lesson]]) |
 | Echo between phones | Watch `[sync]` drift. Persistent large drift means [[Clock Sync]] is struggling: check Wi-Fi quality |
