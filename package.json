@@ -31,18 +31,19 @@
     "@types/react": "~19.3.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~58.0.4",
-    "typescript": "~6.0.3",
-    "ws": "^8.22.0"
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "host": "node server/dev-host.mjs",
-    "build:dev:android": "eas build --profile development --platform android",
-    "build:dev:ios": "eas build --profile development --platform ios",
-    "lint": "expo lint"
+    "build:dev:android": "npx eas-cli@latest build --profile development --platform android",
+    "build:dev:ios": "npx eas-cli@latest build --profile development --platform ios",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc src/core/HostCore.test.ts --ignoreConfig --rootDir src --outDir .test-build --module commonjs --target es2022 --skipLibCheck --strict && node .test-build/core/HostCore.test.js",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "private": true
 }

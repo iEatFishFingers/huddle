@@ -42,3 +42,6 @@ yarn-error.*
 
 # local test audio (never commit)
 music/
+
+# compiled unit tests (npm test)
+.test-build/

@@ -1,5 +1,5 @@
 // Pure HTTP/1.1 helpers for PeerServer. No React Native imports, so they can be exercised from
-// Node (see scripts/test-http.ts).
+// plain Node.
 import { Buffer } from 'buffer';
 
 export const MAX_HEAD_BYTES = 16 * 1024;
