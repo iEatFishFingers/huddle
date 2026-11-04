@@ -12,6 +12,7 @@ import { Banner } from './Banner';
 import { Button } from './Button';
 import { NowPlaying } from './NowPlaying';
 import { ProgressBar } from './ProgressBar';
+import { LibraryPicker } from './library/LibraryPicker';
 import { HistoryRow, QueueRow } from './QueueRow';
 import { Toast, useToastQueue } from './Toast';
 
@@ -42,7 +43,8 @@ export function SessionScreen({ active, name, onLeave }: Props) {
   // must run before useSession connects the transport
   const { address, error: serverError } = useHostAddress(loopback);
   const { client, error, loading, durationMs, addFiles } = useSession(active.transport, name);
-  const { pick, progress, error: addError, dismissError } = useAddSongs(addFiles);
+  const { pick, addFromLibrary, progress, error: addError, dismissError } = useAddSongs(addFiles);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const toasts = useToastQueue();
   const [showHistory, setShowHistory] = useState(false);
 
@@ -188,7 +190,7 @@ export function SessionScreen({ active, name, onLeave }: Props) {
               <Button
                 label="Add songs"
                 variant="secondary"
-                onPress={pick}
+                onPress={() => setPickerOpen(true)}
                 busy={!!progress}
                 icon={<Icon name="plus" size={14} />}
               />
@@ -198,7 +200,7 @@ export function SessionScreen({ active, name, onLeave }: Props) {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>The queue is empty</Text>
                 <Text style={styles.emptyText}>Anyone in the session can add songs from their phone.</Text>
-                <Button label="Add songs" onPress={pick} busy={!!progress} style={{ marginTop: space.sm }} />
+                <Button label="Add songs" onPress={() => setPickerOpen(true)} busy={!!progress} style={{ marginTop: space.sm }} />
               </View>
             ) : (
               <View>
@@ -252,6 +254,7 @@ export function SessionScreen({ active, name, onLeave }: Props) {
         </View>
       </ScrollView>
 
+      <LibraryPicker visible={pickerOpen} onClose={() => setPickerOpen(false)} onAdd={addFromLibrary} onPickFiles={pick} />
       <Toast toast={toasts.current} onHidden={toasts.shift} />
     </View>
   );

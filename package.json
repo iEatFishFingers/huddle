@@ -42,7 +42,7 @@
     "build:dev:ios": "npx eas-cli@latest build --profile development --platform ios",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsc src/core/HostCore.test.ts --ignoreConfig --rootDir src --outDir .test-build --module commonjs --target es2022 --skipLibCheck --strict && node .test-build/core/HostCore.test.js",
+    "test": "tsc src/core/HostCore.test.ts src/library/subsonic.test.ts --ignoreConfig --rootDir src --outDir .test-build --module commonjs --target es2022 --skipLibCheck --strict && node .test-build/core/HostCore.test.js && node .test-build/library/subsonic.test.js",
     "check": "npm run typecheck && npm run lint && npm test"
   },
   "private": true

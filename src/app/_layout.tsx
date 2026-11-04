@@ -17,6 +17,8 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         {/* Leaving goes through a confirm, so no swipe-back out of a live session. */}
         <Stack.Screen name="session" options={{ gestureEnabled: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="library" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="collection/[kind]/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </SafeAreaProvider>
   );

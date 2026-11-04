@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import { advertiseSession, AdvertisedSession } from '../discovery';
+import { library, LibrarySong } from '../library/store';
 import { MAX_PEERS } from '../protocol';
 import type { LoopbackTransport } from '../transport/LoopbackTransport';
 import type { PickedFile } from '../transport/types';
@@ -81,7 +82,7 @@ export function useAdvertise(
 
 type AddState = { count: number; fraction: number } | null;
 
-/** Pick audio files and add them to the session, with progress + error state. */
+/** Add songs to the session (from files or the offline library), with progress + error state. */
 export function useAddSongs(
   // useSession's addFiles resolves false (with its own `error` set) instead of throwing
   addFiles: (files: PickedFile[], onProgress?: (fraction: number) => void) => Promise<unknown>,
@@ -96,28 +97,47 @@ export function useAddSongs(
     };
   }, []);
 
+  const add = useCallback(
+    async (files: PickedFile[]) => {
+      if (!files.length) return;
+      setError(null);
+      try {
+        setProgress({ count: files.length, fraction: 0 });
+        await addFiles(files, (fraction) => {
+          if (mounted.current) setProgress({ count: files.length, fraction });
+        });
+      } catch (e) {
+        if (mounted.current) setError(`Couldn't add songs: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+        if (mounted.current) setProgress(null);
+      }
+    },
+    [addFiles],
+  );
+
+  /** Pick audio files from the phone's files. */
   const pick = useCallback(async () => {
     setError(null);
+    let files: PickedFile[];
     try {
       const res = await DocumentPicker.getDocumentAsync({ type: 'audio/*', multiple: true, copyToCacheDirectory: true });
       if (res.canceled || !res.assets?.length) return;
-      const files: PickedFile[] = res.assets.map((a) => ({
+      files = res.assets.map((a) => ({
         uri: a.uri,
         name: a.name,
         size: a.size ?? 0,
         mimeType: a.mimeType ?? 'audio/mpeg',
         durationMs: 0,
       }));
-      setProgress({ count: files.length, fraction: 0 });
-      await addFiles(files, (fraction) => {
-        if (mounted.current) setProgress({ count: files.length, fraction });
-      });
     } catch (e) {
       if (mounted.current) setError(`Couldn't add songs: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      if (mounted.current) setProgress(null);
+      return;
     }
-  }, [addFiles]);
+    await add(files);
+  }, [add]);
 
-  return { pick, progress, error, dismissError: () => setError(null) };
+  /** Add songs downloaded to this phone's offline library (from Navidrome). */
+  const addFromLibrary = useCallback((songs: LibrarySong[]) => add(songs.map(library.toPickedFile)), [add]);
+
+  return { pick, addFromLibrary, progress, error, dismissError: () => setError(null) };
 }

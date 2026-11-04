@@ -3,7 +3,20 @@
 import { StyleSheet, View } from 'react-native';
 import { colors } from './theme';
 
-export type IconName = 'play' | 'pause' | 'next' | 'previous' | 'up' | 'down' | 'close' | 'plus' | 'chevron-down' | 'chevron-right';
+export type IconName =
+  | 'play'
+  | 'pause'
+  | 'next'
+  | 'previous'
+  | 'up'
+  | 'down'
+  | 'close'
+  | 'plus'
+  | 'chevron-down'
+  | 'chevron-right'
+  | 'chevron-left'
+  | 'download'
+  | 'check';
 
 type Props = { name: IconName; size?: number; color?: string };
 
@@ -39,7 +52,7 @@ function Chevron({ size, color, rotate }: { size: number; color: string; rotate:
           borderBottomWidth: w,
           // the L-shape's corner sits off-centre; shift it back so the chevron looks centred
           marginTop: rotate === '45deg' ? -s / 3 : rotate === '-135deg' ? s / 3 : 0,
-          marginLeft: rotate === '-45deg' ? -s / 3 : 0,
+          marginLeft: rotate === '-45deg' ? -s / 3 : rotate === '135deg' ? s / 3 : 0,
           transform: [{ rotate }],
         }}
       />
@@ -81,6 +94,34 @@ export function Icon({ name, size = 20, color = colors.text }: Props) {
       return <Chevron size={size} color={color} rotate="45deg" />;
     case 'chevron-right':
       return <Chevron size={size} color={color} rotate="-45deg" />;
+    case 'chevron-left':
+      return <Chevron size={size} color={color} rotate="135deg" />;
+    case 'download':
+      return (
+        <View style={box}>
+          <View style={[styles.abs, { top: size * 0.06, width: bar, height: size * 0.56, backgroundColor: color, borderRadius: bar }]} />
+          <View style={[styles.abs, { top: size * 0.22 }]}>
+            <Chevron size={size * 0.62} color={color} rotate="45deg" />
+          </View>
+          <View style={[styles.abs, { bottom: size * 0.06, width: size * 0.76, height: bar, backgroundColor: color, borderRadius: bar }]} />
+        </View>
+      );
+    case 'check':
+      return (
+        <View style={box}>
+          <View
+            style={{
+              width: size * 0.32,
+              height: size * 0.62,
+              borderColor: color,
+              borderRightWidth: bar,
+              borderBottomWidth: bar,
+              marginTop: -size * 0.14,
+              transform: [{ rotate: '45deg' }],
+            }}
+          />
+        </View>
+      );
     case 'close':
     case 'plus': {
       const rot = name === 'close' ? '45deg' : '0deg';
