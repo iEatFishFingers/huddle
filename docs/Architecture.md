@@ -28,6 +28,7 @@ HostCore  queue · members · playback state
 | [[Playback and Drift Correction]] | `src/useSession.ts` | The audio player, streaming, staying in sync |
 | [[Uploads]] | `PeerServer` + `WebSocketTransport` | Joiners adding songs |
 | [[UI and Navigation]] | `src/app/`, `src/components/` | Expo Router screens |
+| [[Navidrome Library]] | `src/library/`, `src/components/library/` | Downloads songs from Navidrome so they can be shared offline |
 
 ## Key ideas
 1. **One source of truth.** Every change (play, seek, queue edits) goes to [[HostCore]], which validates it and broadcasts the new state. Phones never change shared state locally.
@@ -35,9 +36,10 @@ HostCore  queue · members · playback state
 3. **The host is a peer too.** The host's own UI uses a [[SyncClient]] over a loopback [[Transports|transport]], so it follows exactly the same code path as a joiner.
 4. **Bluetooth finds, Wi-Fi carries.** Bluetooth LE is too slow for audio between iPhone and Android, so it's only used for [[Discovery]]. See [[Decisions#Bluetooth for discovery only]].
 5. **Stream, don't download.** Joiners stream from the host's `/audio` endpoint with a buffer. See [[Decisions#Stream with a buffer]].
+6. **Bring your own music.** Streaming-service downloads can't be shared, so songs come from files or from the [[Navidrome Library]], downloaded ahead of time. A session never needs the internet. See [[Decisions#Offline library from Navidrome]].
 
 ## A song's journey
-1. Someone taps *Add songs*. On the host that's a local file; on a joiner it's an [[Uploads|upload]] to the host.
+1. Someone taps *Add songs* and picks from their offline [[Navidrome Library]] or their files. On the host that's a local file; on a joiner it's an [[Uploads|upload]] to the host.
 2. [[HostCore]] adds it to the library and the end of the [[Queue]]. If nothing was selected, it becomes the current track, paused.
 3. Every phone loads the track (the host from its own file, joiners streamed over HTTP) and reports `ready`.
 4. Someone presses play. Once everyone is ready ([[Readiness and Pending Play]]), the host stamps `playing: true` at its current time.

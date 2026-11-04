@@ -9,6 +9,7 @@ Built with Expo (SDK 58) and React Native. Runs on iOS and Android, and works be
 - **Nearby sessions.** The host advertises its session over Bluetooth LE. Joiners see it in a list and tap to join, with no IP addresses to type. Joining by address is still there as a fallback.
 - **Shared queue.** Up next, played history, tap to play now, reorder, remove, and auto-advance at the end of a track. The queue shows who added each song.
 - **Anyone can add songs.** Songs you pick are uploaded to the host, which streams them to everyone.
+- **Offline music library.** Sign in to a [Navidrome](https://www.navidrome.org) server, download albums, playlists or single songs, and share them in a session later with no internet. See [docs/Navidrome Library.md](docs/Navidrome%20Library.md).
 - **Anyone controls playback.** Play, pause, next, previous, and a draggable seek bar. Pressing play while someone is still buffering waits until they're ready, for up to 8 seconds.
 - **Tight sync.** Every phone syncs its clock with the host and corrects drift continuously. Small drift is corrected by a slight, pitch-corrected speed change; large gaps by a single seek.
 - **Streaming.** Playback starts once a few seconds are buffered, instead of after downloading the whole file.
@@ -74,14 +75,18 @@ Open Huddle on each phone and connect to the dev server. If the in-app QR scanne
 2. On another phone, the session appears under **Nearby sessions**. Tap it to join. Allow Bluetooth ("Nearby devices" on Android) when asked.
 3. Add songs from either phone and press play.
 
+To try the offline library: on the home screen tap **Music library**, connect to a Navidrome server, download an album, then in a session tap **Add songs** and pick from **your library**.
+
 ## Project layout
 
 ```
 src/
-  app/            Expo Router routes: index (find/host), session, _layout
+  app/            Expo Router routes: index (find/host), session, library, collection/[kind]/[id], _layout
   components/     Screens and UI pieces (SeekBar, QueueRow, SessionCard, Toast, …)
+    library/      Music library, album/playlist screens, the Add songs sheet
   ui/             Theme, icons, shared hooks
   session/        Active-session store (name, transport)
+  library/        Navidrome (Subsonic) client and the offline library store
   discovery/      Bluetooth LE advertise/scan (expo-ble-kit)
   server/         Embedded HTTP + WebSocket server on the host
   transport/      Loopback (host) and WebSocket (joiner) transports
@@ -98,7 +103,7 @@ src/
 npm run check           # typecheck + lint + unit tests (run before committing)
 npm run typecheck       # tsc --noEmit
 npm run lint            # ESLint (eslint-config-expo)
-npm test                # HostCore unit tests (queue, readiness, seeking)
+npm test                # unit tests: HostCore (queue, readiness, seeking) and the Subsonic client
 npx expo-doctor         # dependency / config health check
 ```
 

@@ -40,3 +40,15 @@ See [[Playback and Drift Correction#The iOS dropout lesson]].
 ## Expo Router and development builds
 **Decision:** use Expo Router for screens, and EAS development builds instead of Expo Go.
 **Why:** the project's `AGENTS.md` requires Expo Router, and the native modules (BLE, TCP) rule out Expo Go. EAS cloud builds make it work from Windows. See [[Development Setup]].
+
+## Offline library from Navidrome
+**Decision:** songs for offline sessions come from a self-hosted Navidrome server, downloaded to the phone ahead of time. See [[Navidrome Library]].
+**Why:**
+- The mission is listening together with no internet. Spotify and Apple Music downloads are encrypted and locked to their apps, so they can't be shared, and working around that would break their terms.
+- Navidrome speaks the open Subsonic API, so other Subsonic servers should work too.
+- Downloaded songs enter a session through the existing `addFiles()` path, so sync, the queue and uploads didn't change.
+
+**Details:**
+- **MP3 at up to 256 kbps.** Plays everywhere, and keeps uploads to the host small.
+- **Token, not password.** Only `md5(password + salt)` and the salt are stored, in a plain JSON file. The token still works as a password for this server, so it should move to `expo-secure-store` at the next native build.
+- **No new native modules.** Everything uses `expo-file-system`, `expo-crypto` and React Native's `Image`, all already in the build, so it reloads live.

@@ -14,6 +14,7 @@ What has been built so far, in order, with the reasons and the problems we hit a
 | 2026-11-03 | iPhone dropout fix | `ec76c25` |
 | 2026-11-03 | Merged to `main`, README and docs | `21ba20a`, `bac3cfc`, `d6a7768` |
 | 2026-11-03 | Bug fixes and codebase review | `4970651` → `c807541` |
+| 2026-11-04 | Navidrome offline library | branch `feature/navidrome-library` |
 
 ---
 
@@ -139,6 +140,21 @@ Commits: `3ad6e76`, `cc1fbc4`, `91544ab`, `c807541`
   - the stale `server/dev-host.mjs`, which used the old protocol, and its `ws` dependency
   - the microphone permission and duplicate storage permissions. These take effect at the next native build.
 - **Scripts:** `npm run check`, `lint`, `typecheck` and `test`. The `build:dev:*` scripts now use `npx eas-cli@latest`.
+
+## 9. Navidrome offline library
+Branch: `feature/navidrome-library`
+
+**The mission, made explicit:** two people on a plane, one with Spotify and one with Apple Music, want to listen together with no Wi-Fi. Streaming-service downloads can't be shared, so Huddle needs music it can actually move between phones.
+
+**What was built:** a bridge to Navidrome, the self-hosted music server a friend runs. See [[Navidrome Library]].
+- A Subsonic API client with token auth (`src/library/subsonic.ts`) and 34 unit tests.
+- An offline library (`src/library/store.ts`): downloads as MP3, covers, persisted index, cancel and retry.
+- A **Music library** screen (On this phone, Albums, Playlists, Search, sign-in) and an album/playlist screen with **Download all**.
+- **Add songs** in a session now opens a sheet: pick from the library (works offline), or **From files**.
+
+No new native modules, so no new build is needed.
+
+**Still open for the mission:** on a plane there's no Wi-Fi network for the phones to share. See [[Open Items#Ideas]].
 
 ---
 

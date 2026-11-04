@@ -5,6 +5,11 @@ Back to [[Home]] · see also [[Project History]], [[Decisions]]
 Things that are known but not done yet, roughly in priority order.
 
 ## Needs testing on the phones
+- [ ] **The Navidrome library** ([[Navidrome Library]]):
+  - Sign in with a real Navidrome account (a domain over HTTPS, and a LAN IP over HTTP).
+  - Download an album, check progress, cancel one song, retry a failure.
+  - Turn on airplane mode, reopen the app, and check the songs are still listed and play in a session.
+  - Add library songs from a joiner: the upload, and the "Artist - Title" names in the queue.
 - [ ] **The codebase-review fixes** ([[Project History#8. Codebase review]]):
   - Tap **End** on the host and check that the joiner shows "The host ended the session." and returns to the list.
   - Play a few songs to confirm the switch to `useAudioPlayer` behaves the same as before.
@@ -31,6 +36,10 @@ These are already committed, but only take effect in a new EAS build. See [[Deve
 - [ ] `react-native-tcp-socket` is flagged by `expo-doctor` as untested on the New Architecture, although it works on both test phones. Keep an eye on it when upgrading.
 
 ## Ideas
+- [ ] **Offline mission: phone-made network.** On a plane there's no Wi-Fi router. An Android host could start a local-only hotspot and pass its name and password to joiners over Bluetooth; the iPhone joins with one tap. Needs a native module and a new build.
+- [ ] **Skip duplicate uploads.** When the host already has a library song (same Navidrome id), the joiner shouldn't upload it again.
+- [ ] Send artist, album and cover with each [[Session Protocol]] track, so the queue and now-playing look like a music app.
+- [ ] Move the Navidrome token into `expo-secure-store` (next native build).
 - [ ] Remember the display name between launches (e.g. with `expo-secure-store` or AsyncStorage).
 - [ ] Drag-to-reorder in the [[Queue]] instead of up/down arrows.
 - [ ] Show each listener's sync status (in sync, buffering, behind) next to their avatar.

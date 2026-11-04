@@ -5,7 +5,7 @@ Back to [[Home]] · see also [[Host Server]], [[Transports]], [[Queue]]
 Anyone in a session can add songs. The host serves every track, so a joiner's song is first **uploaded to the host**, which then streams it to everyone like any other track.
 
 ## Flow
-1. *Add songs* opens the document picker (`audio/*`, multiple). See [[UI and Navigation]].
+1. *Add songs* opens a sheet: pick downloaded songs from the [[Navidrome Library]], or **From files** for the document picker (`audio/*`, multiple). Both produce the same `PickedFile`s. See [[UI and Navigation]].
 2. `useSession.addFiles(files)` calls `transport.addFiles(files, name, onProgress)`.
    - **Host:** builds tracks from the local files and adds them to [[HostCore]] directly.
    - **Joiner:** for each file, `File.upload()` from `expo-file-system` with `BINARY_CONTENT` (a raw body) to:

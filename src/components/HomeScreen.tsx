@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NearbySession, useNearbySessions } from '../discovery';
+import { formatBytes, useLibrary } from '../library/store';
 import { HOST_PORT } from '../protocol';
 import { sessionStore, useSessionStore } from '../session/store';
 import { Icon } from '../ui/Icon';
@@ -24,6 +25,7 @@ import { TextField } from './TextField';
 type Props = {
   onHost: (sessionName: string) => void;
   onJoin: (host: string, port: number, sessionName: string) => void;
+  onOpenLibrary: () => void;
 };
 
 /** "1.2.3.4" or "1.2.3.4:8787" → { host, port }, else null. */
@@ -35,9 +37,12 @@ function parseAddress(text: string): { host: string; port: number } | null {
   return { host: m[1], port };
 }
 
-export function HomeScreen({ onHost, onJoin }: Props) {
+export function HomeScreen({ onHost, onJoin, onOpenLibrary }: Props) {
   const insets = useSafeAreaInsets();
   const displayName = useSessionStore((s) => s.displayName);
+  const librarySongs = useLibrary((s) => s.songs);
+  const libraryConnected = useLibrary((s) => !!s.server);
+  const libraryBytes = useMemo(() => librarySongs.reduce((a, s) => a + s.size, 0), [librarySongs]);
   const { sessions, scanning, error, rescan } = useNearbySessions();
   const [refreshing, setRefreshing] = useState(false);
   const [hostStep, setHostStep] = useState(false);
@@ -114,6 +119,29 @@ export function HomeScreen({ onHost, onJoin }: Props) {
               </View>
             </View>
           )}
+
+          {/* Offline library */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Music library"
+            onPress={onOpenLibrary}
+            style={({ pressed }) => [styles.libraryCard, pressed && styles.libraryPressed]}
+          >
+            <View style={styles.libraryIcon}>
+              <Icon name="download" size={18} color={colors.accent} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.libraryTitle}>Music library</Text>
+              <Text style={styles.libraryMeta} numberOfLines={2}>
+                {librarySongs.length
+                  ? `${librarySongs.length} song${librarySongs.length === 1 ? '' : 's'} on this phone · ${formatBytes(libraryBytes)} · works offline`
+                  : libraryConnected
+                    ? 'Download songs from your server to listen with no internet'
+                    : 'Connect Navidrome and download songs to listen with no internet'}
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={16} color={colors.textMuted} />
+          </Pressable>
 
           {/* Nearby */}
           <View style={styles.section}>
@@ -206,4 +234,17 @@ const styles = StyleSheet.create({
   disclosureText: { color: colors.textDim, fontSize: 15, fontWeight: '600' },
   hint: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
   addressRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  libraryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: space.md,
+    minHeight: 68,
+  },
+  libraryPressed: { backgroundColor: colors.surfacePressed },
+  libraryIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surfaceHigh, alignItems: 'center', justifyContent: 'center' },
+  libraryTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  libraryMeta: { color: colors.textDim, fontSize: 13, marginTop: 2 },
 });

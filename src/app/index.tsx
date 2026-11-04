@@ -12,6 +12,7 @@ export default function Home() {
         // replace (not push): Home unmounts, which stops the Bluetooth scan while in a session
         router.replace('/session');
       }}
+      onOpenLibrary={() => router.push('/library')}
       onJoin={(host, port, sessionName) => {
         sessionStore.start({ transport: new WebSocketTransport(host, port), role: 'joiner', sessionName });
         router.replace('/session');

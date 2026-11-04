@@ -21,6 +21,7 @@ These notes are linked with `[[wikilinks]]`. Open the `docs/` folder as an [Obsi
 - [[Host Server]]: the HTTP and WebSocket server running inside the host app
 - [[Transports]]: loopback (host) vs WebSocket (joiner)
 - [[Uploads]]: how anyone can add a song
+- [[Navidrome Library]]: downloading songs from Navidrome to share offline
 - [[UI and Navigation]]: screens, components, and the session store
 
 ## Working on it

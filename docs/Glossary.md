@@ -17,6 +17,12 @@ A peer that has joined [[HostCore]]. It has a name (from `hello`) and readiness.
 ## Library
 Every track anyone added to the session, deduped by id. See [[Uploads]].
 
+## Offline library
+Songs downloaded to one phone from a Navidrome server, ready to add to any session with no internet. Not the same as the session's **Library** above. See [[Navidrome Library]].
+
+## Navidrome / Subsonic
+Navidrome is a self-hosted music server. It speaks the **Subsonic API**, which is what Huddle's client talks. See [[Navidrome Library]].
+
 ## Queue
 Upcoming entries, in play order. **History** is what already played. See [[Queue]].
 
